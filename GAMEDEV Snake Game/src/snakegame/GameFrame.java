@@ -6,37 +6,65 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
 import com.golden.gamedev.Game;
+import com.golden.gamedev.object.CollisionManager;
+import com.golden.gamedev.object.Sprite;
+import com.golden.gamedev.object.SpriteGroup;
+import com.golden.gamedev.object.collision.BasicCollisionGroup;
+import com.golden.gamedev.object.collision.CollisionShape;
 
 public class GameFrame extends Game {
-	private final int DIMENSION = 16; // 16x16 sized blocks
+	private final static int DIMENSION = 16; // 16x16 sized blocks
 	private final int MIN = 0;
 	private final int MAX = 39;
 	private final double speed = 0.1;
+	protected static boolean isAlive = true; // flag for checking if snake is alive
+	protected static int snakeSize = 2;
 
-	private static boolean isAlive; // flag to check if snake is still alive
-
-	private Block snake;
-	private Block food;
+	//private Block player;
+	private ArrayList<Block> snake;
 	private ArrayList<Block> walls;
-
-	private double snakeX, snakeY;
+	private Block food;
+	
+	//private double playerX, playerY;
+	private ArrayList<Double> snakeX, snakeY;
 	private double foodX, foodY;
 	private int snakeDirection; // 1 up, 2 right, 3 down, 4 left
+
+	private BasicCollisionGroup collisionDeath;
+	private BasicCollisionGroup collisionFood;
+	private SpriteGroup PLAYER;
+	private SpriteGroup ENEMY;
+	private SpriteGroup FOOD;
 
 	@Override
 	public void initResources() {
 		// create snake
-		snakeX = 1;
-		snakeY = 1;
+		/*playerX = 5;
+		playerY = 5;
 		snakeDirection = 2;
-		snake = new Block(getImage("./img/snakeblock.png"), normalize(snakeX),
-				normalize(snakeY));
-
-		// create food
-		foodX = 20;
-		foodY = 20;
-		food = new Block(getImage("./img/foodblock.png"), normalize(foodX),
-				normalize(foodY));
+		player = new Block(getImage("./img/snakeblock.png"), normalize(playerX),
+				normalize(playerY));
+		PLAYER = new SpriteGroup("The Snake");
+		PLAYER.add(player);*/
+		
+		snakeDirection = 2;
+		snake = new ArrayList<Block>();
+		for (int i = 1; i <= snakeSize; i++) {
+			Block snakepart;
+			//snakeX.add((double)1);
+			//snakeY.add((double)i);
+			if (i%2 == 0)
+				snakepart = new Block(getImage("./img/snakeblock.png"), normalize((double)i),normalize((double)1));
+			else
+				snakepart = new Block(getImage("./img/headblock.png"), normalize((double)i),normalize((double)1));
+			snake.add(snakepart);
+		}
+		PLAYER = new SpriteGroup("The Snake");
+		for (Block snakepart : snake) {
+			PLAYER.add(snakepart);
+		}
+		
+		
 
 		// create wall
 		walls = new ArrayList<Block>();
@@ -49,38 +77,52 @@ public class GameFrame extends Game {
 				}
 			}
 		}
+		ENEMY = new SpriteGroup("The Wall");
+		for (Block wall : walls) {
+			ENEMY.add(wall);
+		}
+
+		// create food
+		foodX = 20;
+		foodY = 20;
+		food = new Block(getImage("./img/foodblock.png"), normalize(foodX),
+				normalize(foodY));
+		FOOD = new SpriteGroup("The Food");
+		FOOD.add(food);
+
+		// initialize collisions
+		collisionDeath = new SnakeDeath();
+		collisionDeath.setCollisionGroup(PLAYER, ENEMY);
+		collisionFood = new SnakeEat();
+		collisionFood.setCollisionGroup(PLAYER, FOOD);
 	}
 
 	@Override
 	public void render(Graphics2D gd) {
-		// TODO Auto-generated method stub
 		gd.setColor(Color.GRAY);
 		gd.fillRect(0, 0, getWidth(), getHeight());
 
-		snake.render(gd);
-		food.render(gd);
-
-		for (Block wall : walls) {
-			wall.render(gd);
-		}
+		PLAYER.render(gd);
+		ENEMY.render(gd);		
+		FOOD.render(gd);
 	}
 
 	@Override
 	public void update(long l) {
-		while (isAlive) {
-			if (Math.abs(snake.getX() - food.getX()) < DIMENSION && Math.abs(snake.getY() - food.getY()) < DIMENSION)
-				resetFood();
+		readInput();
 
-			readInput();
-			moveSnake();
+		//if (isAlive)
+		//	moveSnake();
 
-			snake.update(l);
-			food.update(l);
-		}
+		PLAYER.update(l);
+		FOOD.update(l);
+
+		collisionDeath.checkCollision();
+		collisionFood.checkCollision();
 	}
 
 	/* USER DEFINED FUNCTIONS */
-	public double normalize(double val) {
+	public static double normalize(double val) {
 		return val * DIMENSION;
 	}
 
@@ -96,34 +138,48 @@ public class GameFrame extends Game {
 	}
 
 	public void moveSnake() {
-		if (snakeDirection == 1)
-			snakeY -= speed;
-		else if (snakeDirection == 2)
-			snakeX += speed;
-		else if (snakeDirection == 3)
-			snakeY += speed;
-		else if (snakeDirection == 4)
-			snakeX -= speed;
+		for (Block snakepart : snake) {
+			double currX = snakepart.getX();
+			double currY = snakepart.getY();
+			double newX = currX, newY = currY;
+			
+			if (snakeDirection == 1)
+				newY = currY - speed;
+			else if (snakeDirection == 2)
+				newX = currY - speed;
+			else if (snakeDirection == 3)
+				newY = currY + speed;
+			else if (snakeDirection == 4)
+				newX = currX - speed;
 
-		snake.setX(normalize(snakeX));
-		snake.setY(normalize(snakeY));
-		
-		checkIfDead();
+			snakepart.setX(normalize(newX));
+			snakepart.setY(normalize(newY));
+		}		
 	}
+}
 
-	public void resetFood() {
+class SnakeEat extends BasicCollisionGroup {
+	public SnakeEat() {
+		pixelPerfectCollision = false;
+	}
+	@Override
+	public void collided(Sprite snake, Sprite food) {
 		int newX, newY;
 		newX = ((int) ((Math.random() * 100) % 40));
 		newY = ((int) ((Math.random() * 100) % 40));
-		food.setX(normalize((double) newX));
-		food.setY(normalize((double) newY));
-	}
-	
-	public void checkIfDead() {
-		for (Block wall : walls) {
-			if (Math.abs(snake.getX() - wall.getX()) < DIMENSION && Math.abs(snake.getY() - wall.getY()) < DIMENSION)
-				System.out.println("DEAD!");
-		}
+		food.setX(GameFrame.normalize((double) newX));
+		food.setY(GameFrame.normalize((double) newY));
 	}
 
+}
+
+class SnakeDeath extends BasicCollisionGroup {
+	public SnakeDeath() {
+		pixelPerfectCollision = false;
+	}
+
+	@Override
+	public void collided(Sprite snake, Sprite causeOfDeath) {
+		GameFrame.isAlive = false;
+	}
 }
