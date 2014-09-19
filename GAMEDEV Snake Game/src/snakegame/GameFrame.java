@@ -17,15 +17,16 @@ public class GameFrame extends Game {
 	private final int MIN = 0;
 	private final int MAX = 39;
 	private final double speed = 0.1;
-	protected static boolean isAlive = true; // flag for checking if snake is alive
+	protected static boolean isAlive = true; // flag for checking if snake is
+												// alive
 	protected static int snakeSize = 2;
 
-	//private Block player;
+	// private Block player;
 	private ArrayList<Block> snake;
 	private ArrayList<Block> walls;
 	private Block food;
-	
-	//private double playerX, playerY;
+
+	// private double playerX, playerY;
 	private ArrayList<Double> snakeX, snakeY;
 	private double foodX, foodY;
 	private int snakeDirection; // 1 up, 2 right, 3 down, 4 left
@@ -39,32 +40,25 @@ public class GameFrame extends Game {
 	@Override
 	public void initResources() {
 		// create snake
-		/*playerX = 5;
-		playerY = 5;
-		snakeDirection = 2;
-		player = new Block(getImage("./img/snakeblock.png"), normalize(playerX),
-				normalize(playerY));
-		PLAYER = new SpriteGroup("The Snake");
-		PLAYER.add(player);*/
-		
+		/*
+		 * playerX = 5; playerY = 5; snakeDirection = 2; player = new
+		 * Block(getImage("./img/snakeblock.png"), normalize(playerX),
+		 * normalize(playerY)); PLAYER = new SpriteGroup("The Snake");
+		 * PLAYER.add(player);
+		 */
+
 		snakeDirection = 2;
 		snake = new ArrayList<Block>();
 		for (int i = 1; i <= snakeSize; i++) {
 			Block snakepart;
-			//snakeX.add((double)1);
-			//snakeY.add((double)i);
-			if (i%2 == 0)
-				snakepart = new Block(getImage("./img/snakeblock.png"), normalize((double)i),normalize((double)1));
-			else
-				snakepart = new Block(getImage("./img/headblock.png"), normalize((double)i),normalize((double)1));
+			snakepart = new Block(getImage("./img/snakeblock.png"),
+					normalize((double) i), normalize((double) 1));
 			snake.add(snakepart);
 		}
 		PLAYER = new SpriteGroup("The Snake");
-		for (Block snakepart : snake) {
-			PLAYER.add(snakepart);
+		for (Block temp : snake) {
+			PLAYER.add(temp);
 		}
-		
-		
 
 		// create wall
 		walls = new ArrayList<Block>();
@@ -103,7 +97,7 @@ public class GameFrame extends Game {
 		gd.fillRect(0, 0, getWidth(), getHeight());
 
 		PLAYER.render(gd);
-		ENEMY.render(gd);		
+		ENEMY.render(gd);
 		FOOD.render(gd);
 	}
 
@@ -111,8 +105,8 @@ public class GameFrame extends Game {
 	public void update(long l) {
 		readInput();
 
-		//if (isAlive)
-		//	moveSnake();
+		if (isAlive)
+			moveSnake();
 
 		PLAYER.update(l);
 		FOOD.update(l);
@@ -138,23 +132,23 @@ public class GameFrame extends Game {
 	}
 
 	public void moveSnake() {
-		for (Block snakepart : snake) {
-			double currX = snakepart.getX();
-			double currY = snakepart.getY();
-			double newX = currX, newY = currY;
-			
-			if (snakeDirection == 1)
-				newY = currY - speed;
-			else if (snakeDirection == 2)
-				newX = currY - speed;
-			else if (snakeDirection == 3)
-				newY = currY + speed;
-			else if (snakeDirection == 4)
-				newX = currX - speed;
+		/*
+		 * for (Block snakepart : snake) { double currX = snakepart.getX();
+		 * double currY = snakepart.getY(); double newX = currX, newY = currY;
+		 * 
+		 * if (snakeDirection == 1) newY = currY - speed; else if
+		 * (snakeDirection == 2) newX = currX + speed; else if (snakeDirection
+		 * == 3) newY = currY + speed; else if (snakeDirection == 4) newX =
+		 * currX - speed;
+		 * 
+		 * snakepart.setX(normalize(newX)); snakepart.setY(normalize(newY)); }
+		 */
 
-			snakepart.setX(normalize(newX));
-			snakepart.setY(normalize(newY));
-		}		
+		for (Block snakepart : snake) {
+			if (snakeDirection == 2) {
+				snakepart.setX(snakepart.getX() + speed);
+			}
+		}
 	}
 }
 
@@ -162,6 +156,7 @@ class SnakeEat extends BasicCollisionGroup {
 	public SnakeEat() {
 		pixelPerfectCollision = false;
 	}
+
 	@Override
 	public void collided(Sprite snake, Sprite food) {
 		int newX, newY;
