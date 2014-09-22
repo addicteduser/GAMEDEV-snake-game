@@ -5,27 +5,28 @@ import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
-import com.golden.gamedev.Game;
+import com.golden.gamedev.GameEngine;
+import com.golden.gamedev.GameObject;
 import com.golden.gamedev.object.Sprite;
 import com.golden.gamedev.object.SpriteGroup;
 import com.golden.gamedev.object.Timer;
 import com.golden.gamedev.object.collision.BasicCollisionGroup;
 
-public class GameFrame extends Game {
+public class GameFrame extends GameObject {
 	protected final static int DIMENSION = 16; // 16x16 sized blocks
 	protected static final int MIN = 0;
 	protected static final int MAX = 39;
 	private final static int speed = 100;
 	private static  Timer delay;
-	
+
 	protected static boolean isAlive = true; // flag for checking if snake is alive
 	protected static boolean isEat = false; // flag for body increment
-	
+
 	private static Block snakeHead;
 	private static ArrayList<Block> snakeBody;
 	private static ArrayList<Block> walls;
 	private static Block food;
-	
+
 	private static int snakeSize = 5;
 	private double foodX, foodY;
 	private static int snakeDirection; // 1 up, 2 right, 3 down, 4 left
@@ -36,6 +37,12 @@ public class GameFrame extends Game {
 	private SpriteGroup ENEMY;
 	private SpriteGroup FOOD;
 
+	/* CONSTRUCTOR */
+	public GameFrame(GameEngine parent) {
+		super(parent);
+	}
+
+	/* ABSTRACT METHODS */
 	@Override
 	public void initResources() {
 		delay = new Timer (speed);
@@ -70,11 +77,11 @@ public class GameFrame extends Game {
 		foodY = 20;
 		food = new Block(getImage("./img/foodblock.png"), normalize(foodX),
 				normalize(foodY));
-		
+
 		// sprite groups
 		PLAYER = new SpriteGroup("The Snake");
 		PLAYER.add(snakeHead);
-		
+
 		ENEMY = new SpriteGroup("The Cause of Snake Death");
 		for (Block temp : snakeBody) {
 			ENEMY.add(temp);
@@ -82,7 +89,7 @@ public class GameFrame extends Game {
 		for (Block wall : walls) {
 			ENEMY.add(wall);
 		}
-		
+
 		FOOD = new SpriteGroup("The Food");
 		FOOD.add(food);
 
@@ -109,22 +116,25 @@ public class GameFrame extends Game {
 
 		if (delay.action(l) && isAlive) {
 			moveSnake();
+		} else if (!isAlive){
+			parent.nextGameID = 1;
+			finish();
 		}
-		
+
 		collisionDeath.checkCollision();
 		collisionFood.checkCollision();
-		
+
 		if (isEat) {
 			incrementBody();
 			isEat = false;
 		}
-		
+
 		PLAYER.update(l);
 		ENEMY.update(l);
 		FOOD.update(l);
 	}
 
-	/* USER DEFINED FUNCTIONS */
+	/* USER-DEFINED METHODS */
 	public static double normalize(double val) {
 		return val * DIMENSION;
 	}
@@ -139,7 +149,7 @@ public class GameFrame extends Game {
 		if (keyPressed(KeyEvent.VK_LEFT) && snakeDirection != 2)
 			snakeDirection = 4;
 	}
-	
+
 	public void moveHead() {
 		if(snakeDirection == 1)
 			snakeHead.setY(snakeHead.getY() - DIMENSION);
@@ -168,11 +178,11 @@ public class GameFrame extends Game {
 			pastY = tempY;
 		}
 	}
-	
+
 	public void incrementBody() {
 		double newX = snakeHead.getX();
 		double newY = snakeHead.getY();
-		
+
 		Block newBlock = new Block(getImage("./img/snakeblock.png"), newX, newY);
 		snakeBody.add(0, newBlock);
 		ENEMY.add(newBlock);
@@ -191,7 +201,7 @@ class SnakeEat extends BasicCollisionGroup {
 		resetFood(food);
 		GameFrame.isEat = true;
 	}
-	
+
 	public void resetFood(Sprite food) {
 		int max = GameFrame.MAX-1;
 		int min = GameFrame.MIN+1;
