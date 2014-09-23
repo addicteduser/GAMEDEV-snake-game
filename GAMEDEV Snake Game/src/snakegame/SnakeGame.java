@@ -1,4 +1,4 @@
-package snakegame;
+package SnakeG;
 
 import java.awt.Dimension;
 
@@ -10,11 +10,17 @@ public class SnakeGame extends GameEngine {
 	@Override
 	public GameObject getGame(int gameID) {
 		switch (gameID) {
-		case 0: // main menu
-			return new GameFrame(this);
-		case 1: // main game
+		case 0: // Level 1
+			return new GameFrame1(this);
+		case 1: // Game Over
 			return new GameOverFrame(this);
-		case 2: // game over
+                case 2: // Level 2
+                        return new GameFrame2(this);
+                case 3: // Level 3
+                        return new GameFrame3(this);
+                case 4: // Level 4
+			return new GameFrame4(this);
+		case 5: // game over
 			break;
 		}
 		return null;

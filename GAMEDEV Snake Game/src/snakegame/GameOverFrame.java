@@ -21,7 +21,6 @@ public class GameOverFrame extends GameObject {
 		gameoverX = 1;
 		gameoverY = 1;
 		gameover = new Block(getImage("./img/gameover.png"), normalize(gameoverX), normalize(gameoverY));
-
 	}
 
 	@Override
