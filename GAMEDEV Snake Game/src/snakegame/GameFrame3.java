@@ -17,7 +17,7 @@ public class GameFrame3 extends GameFrame {
 			for (int y = MIN; y <= MAX; y++) {
 				if (x == MIN || x == MAX || y == MIN || y == MAX || x == 9
 						&& y >= 11 && y <= 28 || x == 30 && y >= 11 && y <= 28) {
-					Block tempWall = new Block(getImage("WallBlock.png"),
+					Block tempWall = new Block(getImage(WALLBLOCK),
 							normalize((double) x), normalize((double) y));
 					walls.add(tempWall);
 				}

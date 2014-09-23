@@ -20,19 +20,19 @@ public abstract class GameFrame extends GameObject {
 	protected static final String WALLBLOCK = "./img/wallblock.png";
 	protected static final String FOODBLOCK = "./img/foodblock.png";
 
-	protected static int speed = 100;
+	protected static int speed = 100; // delay of snake movement in milliseconds
 	protected static Timer delay;
 
 	protected static boolean isAlive = true; // flag if snake is alive
 	protected static boolean isEat = false; // flag for body increment
 
-	protected static Block snakeHead;
-	protected static ArrayList<Block> snakeBody;
 	protected static ArrayList<Block> walls;
+	protected static ArrayList<Block> snakeBody;
+	protected static Block snakeHead;	
 	protected static Block food;
 
+	protected static int foodX, foodY;
 	protected static int snakeSize = 5;
-	protected static double foodX, foodY;
 	protected static int snakeDirection; // 1 up, 2 right, 3 down, 4 left
 
 	protected static BasicCollisionGroup collisionDeath;
@@ -50,48 +50,11 @@ public abstract class GameFrame extends GameObject {
 	public void initResources() {
 		delay = new Timer(speed);
 
-		// create snake
-		snakeDirection = 2;
-		snakeBody = new ArrayList<Block>();
-		for (int i = snakeSize; i > 0; i--) {
-			Block snakepart = new Block(getImage(SNAKEBLOCK),
-					normalize((double) i + 5), normalize((double) 1 + 5));
-			if (i == snakeSize) {
-				snakeHead = snakepart;
-			} else {
-				snakeBody.add(snakepart);
-			}
-		}
-
-		// create wall
-		createWall();
-
-		// create food
-		foodX = 20;
-		foodY = 20;
-		food = new Block(getImage(FOODBLOCK), normalize(foodX),
-				normalize(foodY));
-
-		// sprite groups
-		PLAYER = new SpriteGroup("The Snake");
-		PLAYER.add(snakeHead);
-
-		ENEMY = new SpriteGroup("The Cause of Snake Death");
-		for (Block temp : snakeBody) {
-			ENEMY.add(temp);
-		}
-		for (Block wall : walls) {
-			ENEMY.add(wall);
-		}
-
-		FOOD = new SpriteGroup("The Food");
-		FOOD.add(food);
-
-		// initialize collisions
-		collisionDeath = new SnakeDeath();
-		collisionDeath.setCollisionGroup(PLAYER, ENEMY);
-		collisionFood = new SnakeEat();
-		collisionFood.setCollisionGroup(PLAYER, FOOD);
+		createWall(); // create wall
+		createSnake(); // create snake
+		createFood(); // create food
+		createSpriteGroups(); // sprite groups
+		initCollisions(); // initialize collisions
 	}
 
 	@Override
@@ -106,7 +69,7 @@ public abstract class GameFrame extends GameObject {
 
 	@Override
 	public void update(long l) {
-		// Change Levels
+		// Change Levels -- DELETE THIS AFTER
 		if (keyPressed(KeyEvent.VK_1)) {
 			parent.nextGameID = 0;
 			finish();
@@ -145,6 +108,50 @@ public abstract class GameFrame extends GameObject {
 
 	/* USER-DEFINED METHODS */
 	public abstract void createWall();
+
+	public void createSnake() {
+		snakeDirection = 2;
+		snakeBody = new ArrayList<Block>();
+		for (int i = snakeSize; i > 0; i--) {
+			Block snakepart = new Block(getImage(SNAKEBLOCK),
+					normalize((double) i + 5), normalize((double) 1 + 5));
+			if (i == snakeSize) {
+				snakeHead = snakepart;
+			} else {
+				snakeBody.add(snakepart);
+			}
+		}
+	}
+
+	public void createFood() {
+		foodX = foodY = 0;
+		randomizeFoodXY();
+		food = new Block(getImage(FOODBLOCK), normalize(foodX),
+				normalize(foodY));
+	}
+
+	public void createSpriteGroups() {
+		PLAYER = new SpriteGroup("The Snake");
+		PLAYER.add(snakeHead);
+
+		ENEMY = new SpriteGroup("The Cause of Snake Death");
+		for (Block temp : snakeBody) {
+			ENEMY.add(temp);
+		}
+		for (Block wall : walls) {
+			ENEMY.add(wall);
+		}
+
+		FOOD = new SpriteGroup("The Food");
+		FOOD.add(food);
+	}
+
+	public void initCollisions() {
+		collisionDeath = new SnakeDeath();
+		collisionDeath.setCollisionGroup(PLAYER, ENEMY);
+		collisionFood = new SnakeEat();
+		collisionFood.setCollisionGroup(PLAYER, FOOD);
+	}
 
 	public static double normalize(double val) {
 		return val * DIMENSION;
@@ -200,6 +207,30 @@ public abstract class GameFrame extends GameObject {
 
 		moveHead();
 	}
+
+	public static boolean isOccupiedByWall(double x, double y) {
+		for (Block wall : walls) {
+			if (wall.getX() == x && wall.getY() == y)
+				return true;
+		}
+		return false;
+	}
+	
+	public static void randomizeFoodXY() {
+		int max = GameFrame.MAX - 1;
+		int min = GameFrame.MIN + 1;
+		int range = max - min + 1;
+		int newX = 0;
+		int newY = 0;
+
+		while (GameFrame.isOccupiedByWall(newX, newY)) {
+			newX = ((int) (Math.random() * range) + min);
+			newY = ((int) (Math.random() * range) + min);
+		}
+		
+		foodX = newX;
+		foodY = newY;
+	}
 }
 
 class SnakeEat extends BasicCollisionGroup {
@@ -212,16 +243,11 @@ class SnakeEat extends BasicCollisionGroup {
 		resetFood(food);
 		GameFrame.isEat = true;
 	}
-
+	
 	public void resetFood(Sprite food) {
-		int max = GameFrame.MAX - 1;
-		int min = GameFrame.MIN + 1;
-		int range = max - min + 1;
-
-		int newX = ((int) (Math.random() * range) + min);
-		int newY = ((int) (Math.random() * range) + min);
-		food.setX(GameFrame.normalize((double) newX));
-		food.setY(GameFrame.normalize((double) newY));
+		GameFrame.randomizeFoodXY();
+		food.setX(GameFrame.normalize((double) GameFrame.foodX));
+		food.setY(GameFrame.normalize((double) GameFrame.foodY));;
 	}
 }
 

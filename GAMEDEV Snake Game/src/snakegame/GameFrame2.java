@@ -17,7 +17,7 @@ public class GameFrame2 extends GameFrame {
 			for (int y = MIN; y <= MAX; y++) {
 				if (x == MIN || x == MAX || y == MIN || y == MAX || x >= 11
 						&& x <= 29 && y >= 19 && y <= 20) {
-					Block tempWall = new Block(getImage("WallBlock.png"),
+					Block tempWall = new Block(getImage(WALLBLOCK),
 							normalize((double) x), normalize((double) y));
 					walls.add(tempWall);
 				}

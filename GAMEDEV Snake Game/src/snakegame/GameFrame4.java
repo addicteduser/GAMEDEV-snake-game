@@ -19,7 +19,7 @@ public class GameFrame4 extends GameFrame {
 						&& y >= 0 && y <= 9 || x >= 30 && x <= 38 && y == 9
 						|| x >= 0 && x <= 9 && y == 30 || x == 30 && y >= 30
 						&& y <= 38) {
-					Block tempWall = new Block(getImage("WallBlock.png"),
+					Block tempWall = new Block(getImage(WALLBLOCK),
 							normalize((double) x), normalize((double) y));
 					walls.add(tempWall);
 				}
