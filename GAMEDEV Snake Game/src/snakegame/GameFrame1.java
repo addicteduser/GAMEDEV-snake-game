@@ -12,6 +12,7 @@ public class GameFrame1 extends GameFrame {
 
 	@Override
 	public void createWall() {
+		System.out.println("LEVEL 1 WALL");
 		walls = new ArrayList<Block>();
 		for (int x = MIN; x <= MAX; x++) {
 			for (int y = MIN; y <= MAX; y++) {

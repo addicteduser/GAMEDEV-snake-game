@@ -1,14 +1,14 @@
 package snakegame;
 
 import java.awt.Graphics2D;
+import java.awt.event.KeyEvent;
 
 import com.golden.gamedev.GameEngine;
 import com.golden.gamedev.GameObject;
 
 public class GameOverFrame extends GameObject {
-	protected final static int DIMENSION = 16;
+	private static final String GAMEOVER = "./resources/img/gameover.png";
 	private static Block gameover;
-	private double gameoverX, gameoverY;
 	
 	/* CONSTRUCTOR */
 	public GameOverFrame(GameEngine parent) {
@@ -18,9 +18,7 @@ public class GameOverFrame extends GameObject {
 	/* ABSTRACT METHODS */
 	@Override
 	public void initResources() {
-		gameoverX = 1;
-		gameoverY = 1;
-		gameover = new Block(getImage("./img/gameover.png"), normalize(gameoverX), normalize(gameoverY));
+		gameover = new Block(getImage(GAMEOVER), 0, 0);
 	}
 
 	@Override
@@ -32,10 +30,10 @@ public class GameOverFrame extends GameObject {
 	@Override
 	public void update(long l) {
 		gameover.update(l);
-	}
-
-	/* USER-DEFINED METHODS */
-	public static double normalize(double val) {
-		return val * DIMENSION;
+		if (keyPressed(KeyEvent.VK_ENTER)) {
+			System.out.println("END");
+			parent.nextGameID = 0;
+			finish();
+		}
 	}
 }
